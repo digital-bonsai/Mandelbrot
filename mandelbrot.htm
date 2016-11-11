@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Mandelbrot: Animated Drawing</title>
+        <link href="r/style.css" rel="stylesheet" type="text/css" >
+        <script src="r/mandelPoint.js" type="application/javascript"></script>
+        <script src="r/mandelArray.js" type="application/javascript"></script>  
+        <script src="r/mandelAnimate.js" type="application/javascript"></script>  
+         <script src="r/mandelParams.js" type="application/javascript"></script>        
+        <meta charset="utf-8">
+    </head>
+    <body>
+
+    <div>
+     <h1>Mandelbrot</h1>
+        <p id="drawMsg">Drawing..</p>
+<div id="controls">
+    <img id="thumbnail" height="150px" width="150px">
+
+    <br /><input id="previousButton" type="button" disabled="disbled" value="previous"><br />
+          
+    <label for="topLeftX">X Start:</label><input size="15" type="text" id="topLeftX" /><br />
+    <label for="topLeftY">Y Start:</label><input size="15" type="text" id="topLeftY" /><br />
+    <label for="interval">Interval:</label><input size="15" type="text" id="interval" /><br />
+    
+    <br /><input id="updateButton" type="button" disabled="disabled" value="update">
+    <br /><input id="updateButton" type="button" onclick="mandelReset()" value="reset"><br />
+
+    
+        </div>
+    <canvas id="mandelbrot" width="400" height="400" >
+     
+    Nothing to show
+    </canvas>
+        </div>
+        
+     <div>
+        <p id="debugInfo"> nothing yet</p>
+         <p id="draggingInfo">checking</p>
+      </div>
+
+        
+
+    </body>
+    </html>
+

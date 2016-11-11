@@ -1,0 +1,46 @@
+body {
+    background-color: #2e2e2e;
+    color: #e0e0e0;
+}
+
+div {
+    position:static;
+    width:650px;
+    margin: 10px auto;
+    clear:both;
+}
+
+#controls {
+    position:absolute;
+    float: right;
+    clear:none;
+    width:220px;
+    border-left: 1px solid #4e4e4e;
+    margin-right:0px;
+    margin-left:420px;
+ }
+
+canvas#mandelbrot {
+    position:relative;
+    float:left;
+    clear:none;
+}
+canvas {
+    position: static;
+}
+h1 {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+p {
+    position:static;
+    float:left;
+    clear:both;
+}
+
+#drawMsg {
+    position:absolute;
+    float:left;
+    color: #33cc33;
+    z-index:2;
+}
