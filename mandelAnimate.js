@@ -73,12 +73,12 @@ window.requestTimeout = function (fn, delay) {
 
 window.onload = function () {
     "use strict";
-    var myElement = document.getElementById("debugInfo"),
-        mandelbrotCanvas = new digiBon.MandelArray("mandelbrot", gMandelInitialX, gMandelInitialY, gInterval, 255);
+    var myElement = document.getElementById("debugInfo");
+    digiBon.mandelbrotCanvas = new digiBon.MandelArray("mandelbrot", gMandelInitialX, gMandelInitialY, gInterval, 255);
     myElement.innerHTML = "started";
     updateValues();
     
-    window.setInterval(function () { mandelbrotCanvas.incrementDraw(); }, 20);
+    window.setInterval(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20);
 };
 
 
@@ -88,10 +88,10 @@ window.onload = function () {
 var mandelReset = function () {
     "use strict";
     var myElement = document.getElementById("debugInfo");
-    if (mandelbrotCanvas !== undefined && mandelbrotCanvas !== null) {
-        mandelbrotCanvas.resetMandel();
+    if (typeof digiBon.mandelbrotCanvas !== typeof undefined && digiBon.mandelbrotCanvas !== null) {
+        digiBon.mandelbrotCanvas.resetMandel();
         myElement.innerHTML = "reset";
         updateValues();
-        window.setInterval(function () { mandelbrotCanvas.incrementDraw(); }, 20);
+        window.setInterval(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20);
     }
 };

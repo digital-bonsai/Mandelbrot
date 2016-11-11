@@ -8,7 +8,7 @@ digiBon.MandelDefaults =  {
     X : -2.4,
     Y : 2.0,
     Delta : 0.01,
-    ColourDepth : 32
+    ColourDepth : 255
 };
 
 digiBon.MandelParams = function (x, y, delta, colourDepth) {
