@@ -12,20 +12,20 @@
     <body>
 
     <div>
-     <h1>Mandelbrot</h1>
+     <h1>Mandelbrot - Feature Incomplete</h1>
         <p id="drawMsg">Drawing..</p>
 <div id="controls">
     <img id="thumbnail" height="150px" width="150px">
-
+<form id="mandelControls">
     <br /><input id="previousButton" type="button" disabled="disbled" value="previous"><br />
           
     <label for="topLeftX">X Start:</label><input size="15" type="text" id="topLeftX" /><br />
     <label for="topLeftY">Y Start:</label><input size="15" type="text" id="topLeftY" /><br />
     <label for="interval">Interval:</label><input size="15" type="text" id="interval" /><br />
     
-    <br /><input id="updateButton" type="button" disabled="disabled" value="update">
+    <br /><input id="updateButton" type="button" onclick="mandelImplement('topLeftX', 'topLeftY', 'interval')" value="update">
     <br /><input id="updateButton" type="button" onclick="mandelReset()" value="reset"><br />
-
+</form>
     
         </div>
     <canvas id="mandelbrot" width="400" height="400" >
