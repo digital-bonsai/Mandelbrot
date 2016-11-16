@@ -5,7 +5,8 @@ var digiBon = digiBon || {},
     mandelbrotCanvas = null,
     gMandelInitialX = -2.4,
     gMandelInitialY = 2.0,
-    gInterval = 0.01;
+    gInterval = 0.01, 
+    gHandle;
 
 var updateValues = function () {
     "use strict";
@@ -69,6 +70,11 @@ window.requestTimeout = function (fn, delay) {
 	return handle;
 };
 
+window.clearRequestTimeout = function (handle) {
+    "use strict";
+    window.cancelAnimationFrame ? window.cancelAnimationFrame(handle.value) : window.webkitCancelRequestAnimationFrame ? window.webkitCancelRequestAnimationFrame(handle.value) : window.mozCancelRequestAnimationFrame ? window.mozCancelRequestAnimationFrame(handle.value) : window.oCancelRequestAnimationFrame ? window.oCancelRequestAnimationFrame(handle.value) : window.msCancelRequestAnimationFrame ? msCancelRequestAnimationFrame(handle.value) : clearTimeout(handle);
+};
+
 //TODO stop and restart annimation based on animation and click and drag
 
 window.onload = function () {
@@ -78,7 +84,7 @@ window.onload = function () {
     myElement.innerHTML = "started";
     updateValues();
     
-    window.setInterval(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20);
+    digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
 };
 
 
@@ -86,7 +92,6 @@ var mandelImplement = function (topXElement, topYElement, intervalElement) {
     "use strict";
     var topX = parseFloat(document.getElementById(topXElement).value),
         topY = parseFloat(document.getElementById(topYElement).value),
-        interval = parseFloat(document.getElementById(intervalElement).value),
         interval = parseFloat(document.getElementById(intervalElement).value),
         validParams = false,
         maxInterval = 1,
@@ -109,11 +114,11 @@ var mandelImplement = function (topXElement, topYElement, intervalElement) {
     if (typeof digiBon.mandelbrotCanvas !== typeof undefined && digiBon.mandelbrotCanvas !== null) {
         if (validParams === false) {
             alert("Please check your inputs.  X Start and Y Start both need to in the range -" + maxCoOrd +
-             " to " + maxCoOrd + ".  The interval needs to below 1 and not too small. ");
+                " to " + maxCoOrd + ".  The interval needs to below 1 and not too small. ");
         } else {
             window.clearInterval();
             digiBon.mandelbrotCanvas.updateArray(topX, topY, interval);
-            window.setInterval(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20); 
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
         }
         
     }
@@ -128,6 +133,6 @@ var mandelReset = function () {
         digiBon.mandelbrotCanvas.resetMandel();
         myElement.innerHTML = "reset";
         updateValues();
-        window.setInterval(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20);
+        digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
     }
 };
