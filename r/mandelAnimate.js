@@ -5,8 +5,11 @@ var digiBon = digiBon || {},
     mandelbrotCanvas = null,
     gMandelInitialX = -2.4,
     gMandelInitialY = 2.0,
-    gInterval = 0.01, 
-    gHandle;
+    gInterval = 0.01,
+    gColourDepth = 255,
+    gHandle,
+    gRefreshTime = 1000 / 20,
+    gParams = [];
 
 var updateValues = function () {
     "use strict";
@@ -16,6 +19,7 @@ var updateValues = function () {
     xElement.value = gMandelInitialX;
     yElement.value = gMandelInitialY;
     intervalElement.value = gInterval;
+    
 
 };
 
@@ -84,46 +88,78 @@ window.onload = function () {
     myElement.innerHTML = "started";
     updateValues();
     
-    digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
+    digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
 };
 
+var mandelPrevious = function () {
+    "use strict";
+    var item =  null,
+        xElement = document.getElementById("topLeftX"),
+        yElement = document.getElementById("topLeftY"),
+        intervalElement = document.getElementById("interval"),
+        previousButton = document.getElementById('previousButton');
 
+
+    if (gParams instanceof Array  && gParams.length >= 1) {
+        item = gParams.pop();
+        xElement.value = item.X.toString();
+        yElement.value = item.Y.toString();
+        intervalElement.value = item.Delta.toString();
+        
+        digiBon.mandelbrotCanvas.updateArray(item.X, item.Y, item.Delta);
+        digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
+    }
+    
+    if (typeof gParams === Array && gParams.length > 1) {
+        previousButton.disabled = false;
+    } else {
+        previousButton.disabled = true;
+    }
+    
+};
+
+var mandelAddToStack = function (paramSet) {
+    "use strict";
+    gParams.push(paramSet);
+    var previousButton = document.getElementById('previousButton');
+    previousButton.disabled = false;
+};
+
+var mandelResetStack = function () {
+    "use strict";
+    var previousButton = document.getElementById('previousButton');
+    gParams = [];
+    previousButton.disabled = false;
+};
 var mandelImplement = function (topXElement, topYElement, intervalElement) {
     "use strict";
     var topX = parseFloat(document.getElementById(topXElement).value),
         topY = parseFloat(document.getElementById(topYElement).value),
         interval = parseFloat(document.getElementById(intervalElement).value),
-        validParams = false,
+        validParams = digiBon.MandelValidParams(topX, topY, interval, gColourDepth),
         maxInterval = 1,
-        maxCoOrd = 3;
-    
-    
-    if (!Number.isNaN(topX) && !Number.isNaN(topY) && !Number.isNaN(interval)) {
-        if (topX >= -1 * maxCoOrd &&
-                topX <= maxCoOrd &&
-                topY >= -1 * maxCoOrd &&
-                topY <= maxCoOrd &&
-                interval >= Number.MIN_VALUE &&
-                interval < maxInterval) {
-            validParams = true;
-            
+        maxCoOrd = 3,
+        thumbnailImage = document.getElementById('thumbnail');
 
-        }
-    }
-    
     if (typeof digiBon.mandelbrotCanvas !== typeof undefined && digiBon.mandelbrotCanvas !== null) {
         if (validParams === false) {
             alert("Please check your inputs.  X Start and Y Start both need to in the range -" + maxCoOrd +
                 " to " + maxCoOrd + ".  The interval needs to below 1 and not too small. ");
         } else {
             window.clearInterval();
+            thumbnailImage.src = "r/tb.png";
+            digiBon.mandelbrotCanvas.params.ImgInfo = thumbnailImage.src;
+            mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             digiBon.mandelbrotCanvas.updateArray(topX, topY, interval);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
         }
         
     }
     
 };
+
+
+
 
 
 var mandelReset = function () {
@@ -133,6 +169,7 @@ var mandelReset = function () {
         digiBon.mandelbrotCanvas.resetMandel();
         myElement.innerHTML = "reset";
         updateValues();
-        digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
+        mandelResetStack();
+        digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
     }
 };

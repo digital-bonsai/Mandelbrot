@@ -1,8 +1,8 @@
 /* mandelArray.js */
-/* uses mandelpoint.js */
+/* uses: mandelAnimate.js */
 
 /*jslint browser:true*/
-/*global console, document, alert*/
+/*global console, document, alert, gRefreshTime, gParams, mandelAddToStack */
 
 
 
@@ -11,10 +11,8 @@ var digiBon = digiBon || {};
 
 digiBon.MandelArray = function (canvasElementName, resetX, resetY, resetInterval, colourDepth) {
     "use strict";
-    this.resetMandelX = -2.4;
-    this.resetMandelY = 2.0;
-    this.resetMandelInterval = 0.01;
-    
+
+
     
     // Parameter checking
     if (colourDepth !== null && !isNaN(colourDepth) && colourDepth > 4 && colourDepth < 256) {
@@ -23,6 +21,8 @@ digiBon.MandelArray = function (canvasElementName, resetX, resetY, resetInterval
         this.limit = 255;
     }
 
+    this.params = new digiBon.MandelParams(resetX, resetY, resetInterval, this.limit);
+    
     // if no canvas - then need to stop
     this.canvas = document.getElementById(canvasElementName);
     document.getElementById('drawMsg').innerHTML = "started";
@@ -54,15 +54,12 @@ digiBon.MandelArray.prototype = (function () {
             i = 0,
             j = 0;
         // Parameter check
-        if (startX === null || isNaN(startX) || startX < -4 || startX > 4) {
-            startX = this.resetMandelX;
+        if (!this.params.TryChange(startX, startY, delta, this.limit)) {
+            startX = digiBon.MandelDefaults.X;
+            startY = digiBon.MandelDefaults.Y;
+            delta = digiBon.MandelDefaults.Delta;
         }
-        if (startY === null || isNaN(startY) || startY < -4 || startY > 4) {
-            startY = this.resetMandelY;
-        }
-        if (delta === null || isNaN(delta) || delta < -1 || delta > 1) {
-            delta = this.resetMandelInterval;
-        }
+        this.params = new digiBon.MandelParams(startX, startY, delta, this.limit);
         for (i = 0; i < this.rows; i += 1) {
             arr[i] = [];
             for (j = 0; j < this.cols; j += 1) {
@@ -247,7 +244,7 @@ digiBon.MandelArray.prototype = (function () {
                 this.dragEnd = new digiBon.Point(evt.clientX - this.canvas.offsetLeft, evt.clientY - this.canvas.offsetTop);
                 // TODO get image and restart animation
                 window.clearRequestTimeout(digiBon.gHandle);
-                digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
+                digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
             }
         },
         mouseMove = function (evt) {
@@ -260,6 +257,8 @@ digiBon.MandelArray.prototype = (function () {
         },
         mouseOut = function (evt) {
             if (this.isDragging === true) {
+                this.params.ImgInfo = this.canvas.toDataURL();
+                mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
                 this.tbImage = this.canvas.toDataURL();
                 this.isDragging = false;
                 this.drawThumbnail.call(this);
@@ -268,9 +267,11 @@ digiBon.MandelArray.prototype = (function () {
             }
         },
         mouseUp = function (evt) {
-            this.drawArray.call(this);
+            this.params.ImgInfo = this.canvas.toDataURL();
+            mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             this.drawDragSquare.call(this);
             this.tbImage = this.canvas.toDataURL();
+            this.drawArray.call(this);
             this.isDragging = false;
             this.drawThumbnail.call(this);
             this.dragEnd = new digiBon.Point(evt.clientX - this.canvas.offsetLeft, evt.clientY - this.canvas.offsetTop);
@@ -306,7 +307,8 @@ digiBon.MandelArray.prototype = (function () {
                 referencePoint.y = this.mandelArray[this.dragStart.x][this.dragStart.y].startPoint.y - (newDimension * previousDifference);
                 
             }
-             
+            
+            
 
             statusElement.innerHTML = "updating...";
             deltaDifference = (newDimension * previousDifference) / this.rows;
@@ -319,7 +321,7 @@ digiBon.MandelArray.prototype = (function () {
             this.dragEnd = new digiBon.Point(Math.floor(this.cols / 2), Math.floor(this.rows / 2));
             this.drawArray.call(this);
             window.clearRequestTimeout(digiBon.gHandle);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
         },
         resetMandel = function () {
             var statusElement = document.getElementById('drawMsg');
@@ -327,19 +329,19 @@ digiBon.MandelArray.prototype = (function () {
             this.mandelArray = this.CreateDisplayArray.call(this, this.resetMandelX, this.resetMandelY, this.resetMandelInterval);
             this.firstTimeDrawn = false;
             window.clearRequestTimeout(digiBon.gHandle);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
             
         },
         updateArray = function (newX, newY, newInterval) {
             var newDimension = null,
-                referencePoint = new digiBon.Point(newX, newY),
+                referencePoint = new digiBon.Point(parseFloat(newX), parseFloat(newY)),
                 dragStartMandel = null,
-                deltaDifference = newInterval,
+                deltaDifference = parseFloat(newInterval),
                 statusElement = document.getElementById('drawMsg'),
                 topLeftXElement = document.getElementById('topLeftX'),
                 topLeftYElement = document.getElementById('topLeftY'),
                 intervalElement = document.getElementById('interval');
-
+            mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             statusElement.innerHTML = "updating... from values";
 
             topLeftXElement.value = newX.toString();
@@ -348,8 +350,18 @@ digiBon.MandelArray.prototype = (function () {
             this.mandelArray = this.CreateDisplayArray.call(this, referencePoint.x, referencePoint.y, deltaDifference);
             this.firstTimeDrawn = false;
             window.clearRequestTimeout(digiBon.gHandle);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
            
+        },
+        getParams = function () {
+            var retObj = {
+                X : this.params.X,
+                Y : this.params.Y,
+                Delta : this.params.Delta,
+                ImageInfo : this.tbImage
+                
+            };
+            return retObj;
         };
     
     return {
@@ -366,7 +378,8 @@ digiBon.MandelArray.prototype = (function () {
         resetMandel : resetMandel,
         updateArray : updateArray,
         drawThumbnail :  drawThumbnail,
-        drawDragSquare : drawDragSquare
+        drawDragSquare : drawDragSquare,
+        getParams : getParams
         
     };
 
