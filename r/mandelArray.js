@@ -118,7 +118,7 @@ digiBon.MandelArray.prototype = (function () {
                 colourString = null,
                 spectrumIndex = colourIndex % 256,
                 colourSwatch  = {"r" : 0x30, "g" : 0x30, "b" : 0x30, "a" : 0.5};
-
+ 
             // Colours could be -1 or 256.  Therefore perform calcs at the end to set bounds
             if (colourIndex >= colourLimit) {
                 colourSwatch  = {"r" : 0x00, "g" : 0x00, "b" : 0x00, "a" : 1};
@@ -134,8 +134,8 @@ digiBon.MandelArray.prototype = (function () {
                 red = 0xff;
                 green = 0xff - ((spectrumIndex - 0x40) * 8);
                 blue = 0x00;
-            } else if (spectrumIndex < 0x70) { // fade the red, bring in blue
-                red = 0xff - ((spectrumIndex - 0x60) * 8);
+            } else if (spectrumIndex < 0x80) { // fade the red, bring in blue
+                red = 0xff; //- ((spectrumIndex - 0x60) * 4);
                 green = 0x00;
                 blue = ((spectrumIndex - 0x60) * 8);
             } else if (spectrumIndex < 0x80) { // go back to purple
@@ -146,49 +146,45 @@ digiBon.MandelArray.prototype = (function () {
                 red = 0xff - ((spectrumIndex - 0x80) * 8);
                 green = 0x00;
                 blue = 0xff;
-            } else if (spectrumIndex < 0xa0) { // go to dark blue
+            } else if (spectrumIndex < 0xb0) {
                 red = 0xff - ((spectrumIndex - 0x80) * 8);
-                green = 0x00;
-                blue = 0xff - ((spectrumIndex - 0x90) * 8);
-            } else if (spectrumIndex < 0xb0) { // go bright blue
-                red = ((spectrumIndex - 0xa0) * 4);
-                green = ((spectrumIndex - 0xa0) * 4);
-                blue = ((spectrumIndex - 0x90) * 8);
-            } else if (spectrumIndex < 0xc0) { // go to white
-                red = ((spectrumIndex - 0xa0) * 8);
-                green = ((spectrumIndex - 0xa0) * 8);
-                blue = 0xff;
-            } else if (spectrumIndex < 0xd0) { // go to turquiose
-                red = 0xff - ((spectrumIndex - 0xc0) * 8);
+                green = ((spectrumIndex - 0x90) * 8);
+                blue = 0xff - ((spectrumIndex - 0x90) * 2);
+            } else if (spectrumIndex < 0xc0) { // go to ?
+                red = 0x00;
                 green = 0xff;
-                blue = 0xff;
-            } else if (spectrumIndex < 0xe0) { // go teal
-                red = 0xff - ((spectrumIndex - 0xc0) * 8);
-                green = 0xff - ((spectrumIndex - 0xd0) * 8);
+                blue = 0xbf + ((spectrumIndex - 0xb0) * 4);
+            } else if (spectrumIndex < 0xd0) { // go to turquiose
+                red = ((spectrumIndex - 0xc0) * 8);
+                green = 0xff - ((spectrumIndex - 0xc0) * 4);
+                blue = 0xff - ((spectrumIndex - 0xc0) * 4);
+            } else if (spectrumIndex < 0xe0) { // 
+                red = ((spectrumIndex - 0xc0) * 8);
+                green = 0xc0;
+                blue = 0xff - ((spectrumIndex - 0xc0) * 4);
+            } else if (spectrumIndex < 0xf0) { // go to green
+                red = 0xff - ((spectrumIndex - 0xe0) * 16);
+                green = 0xc0 - ((spectrumIndex - 0xe0) * 4);
                 blue = 0xff - ((spectrumIndex - 0xd0) * 8);
-            } else if (spectrumIndex < 0xf0) { // go to grey
-                red = (spectrumIndex - 0xe0) * 8;
-                green = 0x7F;
-                blue = 0x7F;
-            } else if (spectrumIndex < 0xff) { // fade to dark green
-                red = 0x7f - ((spectrumIndex - 0xe0) * 8);
-                green = 0x7F;
-                blue = 0x7f - ((spectrumIndex - 0xe0) * 8);
+            } else if (spectrumIndex < 0xff) { // fade to black
+                red = 0x00;
+                green = 0xff - ((spectrumIndex - 0xe0) * 8);
+                blue = 0x00;
             }
-            
+           
             
             red = Math.max(0, red);
             red = Math.min(255, red);
             colourSwatch.r = red;
-            
+           
             green = Math.max(0, green);
             green = Math.min(255, green);
             colourSwatch.g = green;
-            
+           
             blue = Math.max(0, blue);
             blue = Math.min(255, blue);
             colourSwatch.b = blue;
-    
+   
             if (colourComplete === false) {
                 colourSwatch.r = Math.floor(colourSwatch.r / 4);
                 colourSwatch.g = Math.floor(colourSwatch.g / 4);
@@ -197,10 +193,10 @@ digiBon.MandelArray.prototype = (function () {
             } else {
                 colourSwatch.a = 1.0;
             }
-            
+           
             colourString = "rgba(" + colourSwatch.r + "," + colourSwatch.g  + "," + colourSwatch.b  + "," + colourSwatch.a  + ")";
             return colourString;
-
+ 
         },
         drawArray = function () {
             var i = 0,
@@ -251,7 +247,7 @@ digiBon.MandelArray.prototype = (function () {
                 this.dragEnd = new digiBon.Point(evt.clientX - this.canvas.offsetLeft, evt.clientY - this.canvas.offsetTop);
                 // TODO get image and restart animation
                 window.clearRequestTimeout(digiBon.gHandle);
-                digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
+                digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
             }
         },
         mouseMove = function (evt) {
@@ -331,7 +327,7 @@ digiBon.MandelArray.prototype = (function () {
             this.mandelArray = this.CreateDisplayArray.call(this, this.resetMandelX, this.resetMandelY, this.resetMandelInterval);
             this.firstTimeDrawn = false;
             window.clearRequestTimeout(digiBon.gHandle);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000/16);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
             
         },
         updateArray = function (newX, newY, newInterval) {
@@ -352,7 +348,7 @@ digiBon.MandelArray.prototype = (function () {
             this.mandelArray = this.CreateDisplayArray.call(this, referencePoint.x, referencePoint.y, deltaDifference);
             this.firstTimeDrawn = false;
             window.clearRequestTimeout(digiBon.gHandle);
-            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 20);
+            digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, 1000 / 16);
            
         };
     
