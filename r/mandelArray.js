@@ -12,7 +12,8 @@ var digiBon = digiBon || {};
 
 digiBon.MandelArray = function (canvasElementName, thumbnailCanvasElementName, resetX, resetY, resetInterval, colourDepth) {
     "use strict";
-    
+    var originalThumbnail = new Image();
+    originalThumbnail.src = "r/tb.png";
     
     // Parameter checking
     if (colourDepth !== null && !isNaN(colourDepth) && colourDepth > 4 && colourDepth < 256) {
@@ -20,9 +21,9 @@ digiBon.MandelArray = function (canvasElementName, thumbnailCanvasElementName, r
     } else {
         this.limit = 255;
     }
-
-    this.params = new digiBon.MandelParams(resetX, resetY, resetInterval, this.limit);
     
+    this.params = new digiBon.MandelParams(resetX, resetY, resetInterval, this.limit, originalThumbnail);
+
     // if no canvas - then need to stop
     this.canvas = document.getElementById(canvasElementName);
     this.tbCv = document.getElementById(thumbnailCanvasElementName);
@@ -44,6 +45,7 @@ digiBon.MandelArray = function (canvasElementName, thumbnailCanvasElementName, r
     this.ctx.beginPath();
     this.ctx.fillStyle = '#222222';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
     this.mandelArray = this.CreateDisplayArray.call(this, resetX, resetY, resetInterval);
 };
 
@@ -71,6 +73,7 @@ digiBon.MandelArray.prototype = (function () {
         this.dragStart = new digiBon.Point(Math.floor(this.cols / 2), Math.floor(this.rows / 2));
         this.dragEnd = new digiBon.Point(Math.floor(this.cols / 2), Math.floor(this.rows / 2));
         this.isDragging = false;
+        
         return arr;
 
     
@@ -92,6 +95,8 @@ digiBon.MandelArray.prototype = (function () {
             var i = 0,
                 statusElement = document.getElementById('drawMsg'),
                 infoElement = document.getElementById('debugInfo');
+            // TODO make first time only
+            this.drawThumbnail();
             if (this.allComplete === false) {
                 this.incrementArray.call(this);
                 if (this.allComplete === true && this.firstTimeDrawn === false) {
@@ -253,7 +258,6 @@ digiBon.MandelArray.prototype = (function () {
                 if (this.fromInput === gInputEntry) {
                     tbImg.onload = function () {
                         
-                        // TODO draw placement
                     };
                     tbImg.src = "r/tb.png";
                     tbCtx.drawImage(tbImg, 0, 0, this.tbCv.width, this.tbCv.height);
@@ -265,7 +269,7 @@ digiBon.MandelArray.prototype = (function () {
                         if (zoom > 0.25) {
                             tbCtx.clearRect(0, 0, 160, 160);
                             tbCtx.beginPath();
-                            tbCtx.fillStyle = "rgb(99, 99, 99)";
+                            tbCtx.fillStyle = this.getColour(0);
                             tbCtx.fillRect(0, 0, 160, 160);
                             tbCtx.drawImage(tbImg, (-100 * zoom) + xSqOffset, (-100 * zoom) - ySqOffset,
                                             zoom * digiBon.mandelbrotCanvas.rows,
@@ -323,8 +327,6 @@ digiBon.MandelArray.prototype = (function () {
                 }
                 
                 
-            } else {
-                alert("panic");
             }
             this.firstTimeDrawn = true;
             this.fromInput = gInputEntry;
@@ -451,17 +453,13 @@ digiBon.MandelArray.prototype = (function () {
                 topLeftXElement = document.getElementById('topLeftX'),
                 topLeftYElement = document.getElementById('topLeftY'),
                 intervalElement = document.getElementById('interval');
-            mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             statusElement.innerHTML = "updating... from values";
-          /*  if (!(typeof newTbNail === undefined || typeof newTbNail === null)) {
-                this.fromInput = gInputStack;
-                this.tbImage = newTbNail;
-            }
-          */
             topLeftXElement.value = newX.toString();
             topLeftYElement.value = newY.toString();
             intervalElement.value = newInterval.toString();
+            this.drawThumbnail();
             this.mandelArray = this.CreateDisplayArray.call(this, referencePoint.x, referencePoint.y, deltaDifference);
+            
             this.firstTimeDrawn = false;
             window.clearRequestTimeout(digiBon.gHandle);
             digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);

@@ -6,7 +6,7 @@ var digiBon = digiBon || {},
     gMandelInitialX = -2.4,
     gMandelInitialY = 2.0,
     gInterval = 0.01,
-    gColourDepth = 48,//,
+    gColourDepth = 255,//,
     gHandle,
     gRefreshTime = 1000 / 20,
     gParams = [],
@@ -92,6 +92,8 @@ window.onload = function () {
     updateValues();
     
     digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
+
+    
 };
 
 var mandelPrevious = function () {
@@ -110,10 +112,11 @@ var mandelPrevious = function () {
         intervalElement.value = item.Delta.toString();
         
         digiBon.mandelbrotCanvas.updateArray(item.X, item.Y, item.Delta, item.ImageInfo);
+        digiBon.mandelbrotCanvas.drawThumbnail();
         digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
     }
     
-    if (typeof gParams === Array && gParams.length > 1) {
+    if (typeof gParams === Array && gParams.length >= 1) {
         previousButton.disabled = false;
     } else {
         previousButton.disabled = true;
@@ -123,9 +126,12 @@ var mandelPrevious = function () {
 
 var mandelAddToStack = function (paramSet) {
     "use strict";
-    gParams.push(paramSet);
+    
     var previousButton = document.getElementById('previousButton');
     previousButton.disabled = false;
+    gParams.push(paramSet);
+
+
 };
 
 var mandelResetStack = function () {
