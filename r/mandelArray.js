@@ -2,17 +2,17 @@
 /* uses: mandelAnimate.js */
 
 /*jslint browser:true*/
-/*global console, document, alert, gRefreshTime, gParams, mandelAddToStack */
+/*global console, document, alert, gRefreshTime, gParams, mandelAddToStack, gInputEntry, gInputStack, gInputDrag */
 
 
 
 
 var digiBon = digiBon || {};
 
-digiBon.MandelArray = function (canvasElementName, resetX, resetY, resetInterval, colourDepth) {
+
+digiBon.MandelArray = function (canvasElementName, thumbnailCanvasElementName, resetX, resetY, resetInterval, colourDepth) {
     "use strict";
-
-
+    
     
     // Parameter checking
     if (colourDepth !== null && !isNaN(colourDepth) && colourDepth > 4 && colourDepth < 256) {
@@ -25,6 +25,7 @@ digiBon.MandelArray = function (canvasElementName, resetX, resetY, resetInterval
     
     // if no canvas - then need to stop
     this.canvas = document.getElementById(canvasElementName);
+    this.tbCv = document.getElementById(thumbnailCanvasElementName);
     document.getElementById('drawMsg').innerHTML = "started";
     this.canvas.addEventListener("mousedown",  (function (callerInstance) { return callerInstance.mouseDown; }(this)).bind(this));
     this.canvas.addEventListener("mousemove", (function (callerInstance) { return callerInstance.mouseMove; }(this)).bind(this));
@@ -37,7 +38,7 @@ digiBon.MandelArray = function (canvasElementName, resetX, resetY, resetInterval
     this.dragEnd = new digiBon.Point(Math.floor(this.cols / 2), Math.floor(this.rows / 2));
     this.ctx = this.canvas.getContext('2d');
     this.tbImage = this.ctx.createImageData(this.rows, this.cols);
-
+    this.fromInput = gInputEntry;
     this.allComplete = false;
     this.firstTimeDrawn = false;
     this.ctx.beginPath();
@@ -94,7 +95,7 @@ digiBon.MandelArray.prototype = (function () {
             if (this.allComplete === false) {
                 this.incrementArray.call(this);
                 if (this.allComplete === true && this.firstTimeDrawn === false) {
-                    this.tbImage = this.canvas.toDataURL();
+                    
                     this.drawThumbnail.call(this);
                     this.firstTimeDrawn = true;
                     window.clearRequestTimeout(digiBon.gHandle);
@@ -231,11 +232,102 @@ digiBon.MandelArray.prototype = (function () {
             this.ctx.strokeRect(this.dragStart.x, this.dragStart.y, signX * newDimension, signY * newDimension);
         },
         drawThumbnail = function () {
-            var thumbnailImage = document.getElementById('thumbnail');
-            if (this.tbImage !== undefined && this.tbImage !== null) {
-                thumbnailImage.src = this.tbImage;
+            var tbCtx = this.tbCv.getContext('2d'),
+                tbImg = new Image(),
+                edge = 0,
+                topLeft = this.mandelArray[0][0].coOrd(),
+                bottomRight = this.mandelArray[digiBon.mandelbrotCanvas.rows - 1][digiBon.mandelbrotCanvas.cols - 1].coOrd(),
+                centre = this.mandelArray[digiBon.mandelbrotCanvas.rows / 2][digiBon.mandelbrotCanvas.cols / 2].coOrd(),
+                scaleFactor = 2.0,
+                zoom = scaleFactor * digiBon.mandelbrotCanvas.params.Delta / digiBon.MandelDefaults.Delta,
+                xSqOffset = (topLeft.x - digiBon.MandelDefaults.X) * 100,
+                ySqOffset = (topLeft.y - digiBon.MandelDefaults.Y) * 100,
+                xMiddleSpot = (digiBon.MandelDefaults.X  + (digiBon.MandelDefaults.X + (digiBon.MandelDefaults.Delta * digiBon.mandelbrotCanvas.cols))) / 2,
+                xCentreOffset = 200 + ((centre.x - xMiddleSpot) * 100),
+                yCentreOffset = 200 - (centre.y * 100),
+                adjustmentFactor = 50;
+            //this.tbImage = this.canvas.toDataURL();
+            if (typeof this.tbImage !== "undefined" && typeof this.tbImage !== "null") {
+                
+                
+                if (this.fromInput === gInputEntry) {
+                    tbImg.onload = function () {
+                        
+                        // TODO draw placement
+                    };
+                    tbImg.src = "r/tb.png";
+                    tbCtx.drawImage(tbImg, 0, 0, this.tbCv.width, this.tbCv.height);
+                    edge = digiBon.mandelbrotCanvas.params.Delta * digiBon.mandelbrotCanvas.cols / digiBon.MandelDefaults.Y / 2;
+                    
+                    if (zoom < 2.0) {
+                        // resize background image
+                        // draw red square
+                        if (zoom > 0.25) {
+                            tbCtx.clearRect(0, 0, 160, 160);
+                            tbCtx.beginPath();
+                            tbCtx.fillStyle = "rgb(99, 99, 99)";
+                            tbCtx.fillRect(0, 0, 160, 160);
+                            tbCtx.drawImage(tbImg, (-100 * zoom) + xSqOffset, (-100 * zoom) - ySqOffset,
+                                            zoom * digiBon.mandelbrotCanvas.rows,
+                                            zoom * digiBon.mandelbrotCanvas.cols,
+                                            0, 0,
+                                            160, 160);
+                            tbCtx.strokeStyle = "#cc0000";
+                            tbCtx.lineWidth = 3;
+                            tbCtx.strokeRect(Math.abs(this.tbCv.width / 4), Math.abs(this.tbCv.height / 4),
+                                             Math.abs(this.tbCv.width / 2), Math.abs(this.tbCv.height / 2));
+
+                            
+                        } else {
+          
+                            tbCtx.clearRect(0, 0, 160, 160);
+                            tbCtx.beginPath();
+                            tbCtx.fillStyle = "rgb(99, 99, 99)";
+                            tbCtx.fillRect(0, 0, 160, 160);
+                            tbCtx.drawImage(tbImg, (xCentreOffset - adjustmentFactor), (yCentreOffset - adjustmentFactor),
+                                            0.25 * digiBon.mandelbrotCanvas.rows,
+                                            0.25 * digiBon.mandelbrotCanvas.cols,
+                                            0, 0,
+                                            160, 160);
+                                            
+                            tbCtx.strokeStyle = "#cc0000";
+                            tbCtx.lineWidth = 3;
+                            tbCtx.closePath();
+                            tbCtx.moveTo(80, 40);
+                            tbCtx.lineTo(80, 72);
+                            tbCtx.stroke();
+                            tbCtx.moveTo(80, 88);
+                            tbCtx.lineTo(80, 120);
+                            tbCtx.stroke();
+                            tbCtx.moveTo(40, 80);
+                            tbCtx.lineTo(72, 80);
+                            tbCtx.stroke();
+                            tbCtx.moveTo(88, 80);
+                            tbCtx.lineTo(120, 80);
+                            tbCtx.stroke();
+                            tbCtx.closePath();
+
+                        }
+                
+                    } else {
+                        //
+                    }
+                    this.tbImage = this.tbCv.toDataURL();
+                } else if (this.fromInput === gInputDrag) {
+                    this.tbImage = this.canvas.toDataURL();
+                    tbImg.src = this.tbImage;
+                    tbCtx.drawImage(tbImg, 0, 0, this.tbCv.width, this.tbCv.height);
+                } else if (this.from === gInputStack) {
+                    tbCtx.drawImage(this.tbImage, 0, 0, this.tbCv.width, this.tbCv.height);
+                    this.tbImage = this.canvas.toDataURL();
+                }
+                
+                
+            } else {
+                alert("panic");
             }
             this.firstTimeDrawn = true;
+            this.fromInput = gInputEntry;
         },
         mouseDown = function (evt) {
             if (this.isDragging === false) {
@@ -248,35 +340,53 @@ digiBon.MandelArray.prototype = (function () {
             }
         },
         mouseMove = function (evt) {
+            var nwse = true;
             if (this.isDragging === true) {
                 this.dragEnd = new digiBon.Point(evt.clientX - this.canvas.offsetLeft, evt.clientY - this.canvas.offsetTop);
                 // TODO redraw image and add square
                 this.drawArray.call(this);
-
+                
+                if (this.dragEnd.x < this.dragStart.x) {
+                    if (this.dragEnd.y > this.dragStart.y) {
+                        nwse = false;
+                    }
+                } else {
+                    if (this.dragEnd.y < this.dragStart.y) {
+                        nwse = false;
+                    }
+                }
+                if (nwse) {
+                    this.canvas.style.cursor = "nwse-resize";
+                } else {
+                    this.canvas.style.cursor = "nesw-resize";
+                }
+                
             }
         },
         mouseOut = function (evt) {
             if (this.isDragging === true) {
+                this.fromInput = gInputDrag;
                 this.params.ImgInfo = this.canvas.toDataURL();
                 mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
-                this.tbImage = this.canvas.toDataURL();
                 this.isDragging = false;
                 this.drawThumbnail.call(this);
                 this.resetArray.call(this);
+                this.canvas.style.cursor = "auto";
 
             }
         },
         mouseUp = function (evt) {
+            this.fromInput = gInputDrag;
             this.params.ImgInfo = this.canvas.toDataURL();
             mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             this.drawDragSquare.call(this);
-            this.tbImage = this.canvas.toDataURL();
             this.drawArray.call(this);
             this.isDragging = false;
             this.drawThumbnail.call(this);
             this.dragEnd = new digiBon.Point(evt.clientX - this.canvas.offsetLeft, evt.clientY - this.canvas.offsetTop);
             this.resetArray.call(this);
             this.allComplete = false;
+            this.canvas.style.cursor = "auto";
 
         },
         resetArray = function () {
@@ -332,7 +442,7 @@ digiBon.MandelArray.prototype = (function () {
             digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
             
         },
-        updateArray = function (newX, newY, newInterval) {
+        updateArray = function (newX, newY, newInterval, newTbNail) {
             var newDimension = null,
                 referencePoint = new digiBon.Point(parseFloat(newX), parseFloat(newY)),
                 dragStartMandel = null,
@@ -343,7 +453,11 @@ digiBon.MandelArray.prototype = (function () {
                 intervalElement = document.getElementById('interval');
             mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
             statusElement.innerHTML = "updating... from values";
-
+          /*  if (!(typeof newTbNail === undefined || typeof newTbNail === null)) {
+                this.fromInput = gInputStack;
+                this.tbImage = newTbNail;
+            }
+          */
             topLeftXElement.value = newX.toString();
             topLeftYElement.value = newY.toString();
             intervalElement.value = newInterval.toString();

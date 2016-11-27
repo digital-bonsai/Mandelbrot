@@ -6,10 +6,13 @@ var digiBon = digiBon || {},
     gMandelInitialX = -2.4,
     gMandelInitialY = 2.0,
     gInterval = 0.01,
-    gColourDepth = 255,
+    gColourDepth = 48,//,
     gHandle,
     gRefreshTime = 1000 / 20,
-    gParams = [];
+    gParams = [],
+    gInputEntry = 0,
+    gInputStack = 1,
+    gInputDrag = 2;
 
 var updateValues = function () {
     "use strict";
@@ -84,7 +87,7 @@ window.clearRequestTimeout = function (handle) {
 window.onload = function () {
     "use strict";
     var myElement = document.getElementById("debugInfo");
-    digiBon.mandelbrotCanvas = new digiBon.MandelArray("mandelbrot", gMandelInitialX, gMandelInitialY, gInterval, 255);
+    digiBon.mandelbrotCanvas = new digiBon.MandelArray("mandelbrot", "cvThumbnail", gMandelInitialX, gMandelInitialY, gInterval, gColourDepth);
     myElement.innerHTML = "started";
     updateValues();
     
@@ -106,7 +109,7 @@ var mandelPrevious = function () {
         yElement.value = item.Y.toString();
         intervalElement.value = item.Delta.toString();
         
-        digiBon.mandelbrotCanvas.updateArray(item.X, item.Y, item.Delta);
+        digiBon.mandelbrotCanvas.updateArray(item.X, item.Y, item.Delta, item.ImageInfo);
         digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
     }
     
@@ -144,12 +147,11 @@ var mandelImplement = function (topXElement, topYElement, intervalElement) {
     if (typeof digiBon.mandelbrotCanvas !== typeof undefined && digiBon.mandelbrotCanvas !== null) {
         if (validParams === false) {
             alert("Please check your inputs.  X Start and Y Start both need to in the range -" + maxCoOrd +
-                " to " + maxCoOrd + ".  The interval needs to below 1 and not too small. ");
+                " to " + maxCoOrd + ".  The interval needs to be a positive number below 1.6 and not too small.");
         } else {
             window.clearInterval();
-            thumbnailImage.src = "r/tb.png";
-            digiBon.mandelbrotCanvas.params.ImgInfo = thumbnailImage.src;
             mandelAddToStack(digiBon.mandelbrotCanvas.getParams());
+            digiBon.mandelbrotCanvas.fromInput = gInputEntry;
             digiBon.mandelbrotCanvas.updateArray(topX, topY, interval);
             digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
         }

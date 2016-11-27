@@ -20,7 +20,7 @@ digiBon.MandelValidParams = function (x, y, delta, colourDepth) {
     if (y === null || isNaN(y) || y < -4 || y > 4) {
         areValid = false;
     }
-    if (delta === null || isNaN(delta) || delta < -1.0 || delta > 1.0) {
+    if (delta === null || isNaN(delta) || delta < Number.MIN_VALUE || delta >= 0.016) {
         areValid = false;
     }
     if (colourDepth === null || isNaN(colourDepth) || colourDepth < 4.0 || colourDepth > 255) {

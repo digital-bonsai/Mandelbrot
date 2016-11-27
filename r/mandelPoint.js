@@ -56,6 +56,9 @@ digiBon.Mandelpoint.prototype = (function () {
             }
             return this.count;
         },
+        coOrd = function () {
+          return this.startPoint;  
+        },
         iterateToEnd = function () {
 
             var tempX = 0.00,
@@ -78,7 +81,8 @@ digiBon.Mandelpoint.prototype = (function () {
         get : getIterationCount,
         nextIter : calculateIteration,
         finishIter : iterateToEnd,
-        isCompleted : isCompleted
+        isCompleted : isCompleted,
+        coOrd : coOrd
         
     };
 }());
