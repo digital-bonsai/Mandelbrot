@@ -105,7 +105,7 @@ var mandelPrevious = function () {
         previousButton = document.getElementById('previousButton');
 
 
-    if (gParams instanceof Array  && gParams.length >= 1) {
+    if (Array.isArray(gParams) && gParams.length >= 1) {
         item = gParams.pop();
         xElement.value = item.X.toString();
         yElement.value = item.Y.toString();
@@ -116,7 +116,7 @@ var mandelPrevious = function () {
         digiBon.gHandle = window.requestTimeout(function () { digiBon.mandelbrotCanvas.incrementDraw(); }, gRefreshTime);
     }
     
-    if (typeof gParams === Array && gParams.length >= 1) {
+    if (Array.isArray(gParams) && gParams.length >= 1) {
         previousButton.disabled = false;
     } else {
         previousButton.disabled = true;
