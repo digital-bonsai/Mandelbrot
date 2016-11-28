@@ -95,8 +95,10 @@ digiBon.MandelArray.prototype = (function () {
             var i = 0,
                 statusElement = document.getElementById('drawMsg'),
                 infoElement = document.getElementById('debugInfo');
-            // TODO make first time only
-            this.drawThumbnail();
+            if (this.firstTimeDrawn === false) {
+                this.drawThumbnail.call(this);
+            }
+
             if (this.allComplete === false) {
                 this.incrementArray.call(this);
                 if (this.allComplete === true && this.firstTimeDrawn === false) {
@@ -313,10 +315,12 @@ digiBon.MandelArray.prototype = (function () {
 
                         }
                 
-                    } else {
-                        //
+                    } /*else {
+                        alert("bad zoom");
+                        this.fromInput = gInputEntry;
                     }
                     this.tbImage = this.tbCv.toDataURL();
+                    */
                 } else if (this.fromInput === gInputDrag) {
                     this.tbImage = this.canvas.toDataURL();
                     tbImg.src = this.tbImage;
@@ -324,12 +328,15 @@ digiBon.MandelArray.prototype = (function () {
                 } else if (this.from === gInputStack) {
                     tbCtx.drawImage(this.tbImage, 0, 0, this.tbCv.width, this.tbCv.height);
                     this.tbImage = this.canvas.toDataURL();
+                } else {
+                    alert("panic nothing defined");
+                    
+                    this.fromInput = gInputEntry;
                 }
                 
                 
             }
             this.firstTimeDrawn = true;
-            this.fromInput = gInputEntry;
         },
         mouseDown = function (evt) {
             if (this.isDragging === false) {
@@ -362,6 +369,7 @@ digiBon.MandelArray.prototype = (function () {
                 } else {
                     this.canvas.style.cursor = "nesw-resize";
                 }
+                this.fromInput = gInputDrag;
                 
             }
         },
